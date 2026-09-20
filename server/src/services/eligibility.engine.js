@@ -185,11 +185,17 @@ const evaluateScheme = ({
     schemeId: scheme.id,
     schemeCode: scheme.code,
     schemeName: scheme.name,
+    department: scheme.department || null,
+    targetBeneficiary: scheme.targetBeneficiary || null,
+    benefit: scheme.benefit || null,
+    description: scheme.description || null,
     outcome,
     satisfiedRules,
     failedConditions,
     missingConditions,
     missingDocuments,
+    rules: scheme.rules || [],
+    documents: scheme.documents || [],
   };
 };
 
@@ -198,17 +204,19 @@ const evaluateSchemes = ({
   members = [],
   schemes = [],
   documents = [],
-}) =>
-  schemes.map((scheme) =>
+}) => {
+  const docList = Array.isArray(documents) ? documents : [];
+  return schemes.map((scheme) =>
     evaluateScheme({
       family,
       members,
       scheme,
-      documents: documents.filter(
-        (document) => document.schemeId === scheme.id
+      documents: docList.filter(
+        (document) => typeof document === 'string' || !document?.schemeId || document.schemeId === scheme.id
       ),
     })
   );
+};
 
 module.exports = {
   OUTCOMES,

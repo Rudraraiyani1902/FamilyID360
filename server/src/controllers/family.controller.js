@@ -64,9 +64,22 @@ const getFamily = async (req, res, next) => {
   }
 };
 
+const getMembers = async (req, res, next) => {
+  try {
+    const members = await FamilyMember.findAll({
+      where: { familyId: req.family.id },
+      attributes: { exclude: ['aadhaarReference', 'mobileNumber', 'userId'] },
+    });
+
+    res.json(members.map(safeMember));
+  } catch (error) {
+    next(error);
+  }
+};
+
 const updateFamily = async (req, res, next) => {
   try {
-    const allowedFields = ['addressId', 'status'];
+    const allowedFields = ['addressId', 'status', 'annualIncome'];
     const updates = {};
 
     for (const field of allowedFields) {
@@ -80,6 +93,58 @@ const updateFamily = async (req, res, next) => {
     });
 
     res.json(safeFamily(family));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getMyFamily = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    // Search by createdBy or linked member userId
+    let family = await Family.findOne({
+      where: { createdBy: userId },
+      include: [familyInclude],
+    });
+
+    if (!family) {
+      const member = await FamilyMember.findOne({ where: { userId } });
+      if (member) {
+        family = await Family.findByPk(member.familyId, {
+          include: [familyInclude],
+        });
+      }
+    }
+
+    if (!family) {
+      return res.status(404).json({ message: 'No family profile found for this user' });
+    }
+
+    res.json(safeFamily(family));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateMyFamily = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    let family = await Family.findOne({ where: { createdBy: userId } });
+    if (!family) {
+      const member = await FamilyMember.findOne({ where: { userId } });
+      if (member) {
+        family = await Family.findByPk(member.familyId);
+      }
+    }
+
+    if (!family) {
+      return res.status(404).json({ message: 'No family profile found for this user' });
+    }
+
+    req.family = family;
+    return updateFamily(req, res, next);
   } catch (error) {
     next(error);
   }
@@ -163,7 +228,10 @@ const removeMember = async (req, res, next) => {
 module.exports = {
   createFamily,
   getFamily,
+  getMyFamily,
+  getMembers,
   updateFamily,
+  updateMyFamily,
   addMember,
   updateMember,
   removeMember,

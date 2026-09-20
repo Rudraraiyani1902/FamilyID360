@@ -75,3 +75,31 @@ exports.authorize = (...roles) => {
     next();
   };
 };
+
+// Get current authenticated user profile and family metadata
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId, {
+      attributes: ['id', 'mobileNumber', 'email', 'role', 'status', 'lastLoginAt'],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { Family } = require('../models');
+    const family = await Family.findOne({
+      where: { createdBy: req.userId },
+      attributes: ['id', 'familyIdNumber', 'addressId', 'annualIncome', 'status'],
+    });
+
+    res.status(200).json({
+      user,
+      familyId: family ? family.id : null,
+      familyIdNumber: family ? family.familyIdNumber : null,
+      family: family || null,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user profile', error: error.message });
+  }
+};

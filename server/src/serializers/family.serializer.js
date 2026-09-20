@@ -15,6 +15,8 @@ const safeMember = (member) => ({
 const safeFamily = (family) => ({
   id: family.id,
   familyIdNumber: family.familyIdNumber,
+  addressId: family.addressId,
+  annualIncome: family.annualIncome,
   status: family.status,
   createdAt: family.createdAt,
   updatedAt: family.updatedAt,

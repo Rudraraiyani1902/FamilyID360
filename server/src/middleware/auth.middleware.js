@@ -4,16 +4,21 @@ const config = require('../config/auth');
 
 // Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
-  const token = req.headers['authorization'];
+  const authHeader = req.headers['authorization'];
 
-  if (!token) {
+  if (!authHeader) {
     return res.status(403).send({ message: 'No token provided!' });
   }
 
-  jwt.verify(token, config.secret, (err, decoded) => {
+  // Support both "Bearer <token>" and raw token formats
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+
+  jwt.verify(token, config.JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).send({ message: 'Unauthorized!' });
     }
+    // Set req.user so all middleware (family, role) can access it
+    req.user = { id: decoded.id, role: decoded.role };
     req.userId = decoded.id;
     next();
   });
@@ -51,6 +56,7 @@ const isCitizen = (req, res, next) => {
 
 module.exports = {
   verifyToken,
+  authenticate: verifyToken, // alias so routes can use either name
   isAdmin,
   isOfficer,
   isCitizen,
