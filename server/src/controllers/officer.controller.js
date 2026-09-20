@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 const {
   Family,
   FamilyMember,
@@ -61,6 +61,31 @@ const getDashboardStats = async (req, res, next) => {
       scanDataQualityIssues(),
     ]);
 
+    const qualityCategories = dataQualityIssues.reduce((categories, issue) => {
+      categories[issue.category] = (categories[issue.category] || 0) + 1;
+      return categories;
+    }, {});
+    const dataQualityByCategory = Object.entries(qualityCategories).map(([category, count]) => ({ category, count }));
+
+    const [applicationsByStatus, familiesByVerificationStatus, schemeApplicationDistribution] = await Promise.all([
+      Application.findAll({
+        attributes: ['status', [fn('COUNT', col('id')), 'count']],
+        group: ['status'],
+        raw: true,
+      }),
+      Family.findAll({
+        attributes: ['verificationStatus', [fn('COUNT', col('id')), 'count']],
+        group: ['verificationStatus'],
+        raw: true,
+      }),
+      Application.findAll({
+        attributes: [[fn('COUNT', col('Application.id')), 'count']],
+        include: [{ model: Scheme, as: 'scheme', attributes: ['id', 'name'] }],
+        group: ['scheme.id', 'scheme.name'],
+        raw: true,
+      }),
+    ]);
+
     res.json({
       success: true,
       data: {
@@ -74,7 +99,162 @@ const getDashboardStats = async (req, res, next) => {
         potentialDuplicateRecords: potentialDuplicates,
         dataQualityIssuesCount: dataQualityIssues.length,
         recentQualityIssues: dataQualityIssues.slice(0, 5),
+        applicationsByStatus: applicationsByStatus.map((row) => ({ status: row.status, count: Number(row.count) })),
+        familiesByVerificationStatus: familiesByVerificationStatus.map((row) => ({
+          status: row.verificationStatus,
+          count: Number(row.count),
+        })),
+        schemeApplicationDistribution: schemeApplicationDistribution.map((row) => ({
+          scheme: row['scheme.name'] || 'Unknown scheme',
+          count: Number(row.count),
+        })),
+        dataQualityByCategory,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── Feature 7: Officer Application Management ────────────────────────────────
+const getOfficerApplications = async (req, res, next) => {
+  try {
+    const { search = '', status = '', page = 1, limit = 10 } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageLimit = Math.max(1, Math.min(50, parseInt(limit, 10) || 10));
+    const where = {};
+
+    if (status) where.status = status;
+    if (search.trim()) {
+      const query = search.trim();
+      where[Op.or] = [
+        { applicationId: { [Op.iLike]: `%${query}%` } },
+        { '$family.family_id_number$': { [Op.iLike]: `%${query}%` } },
+        { '$scheme.name$': { [Op.iLike]: `%${query}%` } },
+      ];
+    }
+
+    const { count, rows } = await Application.findAndCountAll({
+      where,
+      include: [
+        { model: Family, as: 'family', attributes: ['id', 'familyIdNumber'] },
+        { model: Scheme, as: 'scheme', attributes: ['id', 'code', 'name'] },
+      ],
+      order: [['updatedAt', 'DESC']],
+      limit: pageLimit,
+      offset: (pageNum - 1) * pageLimit,
+      distinct: true,
+    });
+
+    res.json({
+      success: true,
+      data: rows,
+      pagination: { total: count, page: pageNum, limit: pageLimit, totalPages: Math.ceil(count / pageLimit) },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateApplicationStatus = async (req, res, next) => {
+  const transaction = await Application.sequelize.transaction();
+  try {
+    const { id } = req.params;
+    const { status, reason } = req.body;
+    const validStatuses = ['PENDING', 'UNDER_REVIEW', 'DOCUMENT_REQUIRED', 'APPROVED', 'REJECTED'];
+
+    if (!validStatuses.includes(status)) {
+      await transaction.rollback();
+      return res.status(400).json({ message: `Invalid application status. Must be one of: ${validStatuses.join(', ')}` });
+    }
+    if (['REJECTED', 'DOCUMENT_REQUIRED'].includes(status) && !reason?.trim()) {
+      await transaction.rollback();
+      return res.status(400).json({ message: 'A reason is required when rejecting or requesting documents.' });
+    }
+
+    const application = await Application.findOne({
+      where: { id },
+      include: [
+        { model: Family, as: 'family', attributes: ['id', 'familyIdNumber'] },
+        { model: Scheme, as: 'scheme', attributes: ['id', 'name'] },
+      ],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!application) {
+      await transaction.rollback();
+      return res.status(404).json({ message: 'Application not found.' });
+    }
+
+    const previousStatus = application.status;
+    const nextRemarks = reason?.trim() || application.remarks;
+    await application.update({ status, remarks: nextRemarks }, { transaction });
+
+    const officerName = req.user.email || req.user.mobileNumber || 'Government Officer';
+    await AuditLog.create({
+      entityType: 'APPLICATION',
+      entityId: application.id,
+      action: 'APPLICATION_STATUS_CHANGED',
+      previousState: { status: previousStatus },
+      newState: { status, reason: reason?.trim() || null },
+      notes: reason?.trim() || `Application status changed from ${previousStatus} to ${status}.`,
+      performedBy: req.user.id,
+      performedByRole: req.user.role,
+      officerName,
+    }, { transaction });
+
+    await transaction.commit();
+    res.json({ success: true, message: 'Application status updated and audit entry recorded.', data: application });
+  } catch (error) {
+    await transaction.rollback();
+    next(error);
+  }
+};
+
+// ── Feature 8: Append-only Audit Log View ─────────────────────────────────────
+const getAuditLogs = async (req, res, next) => {
+  try {
+    const { search = '', entityType = '', page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageLimit = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
+    const where = {};
+    if (entityType) where.entityType = entityType;
+    if (search.trim()) {
+      where[Op.or] = [
+        { action: { [Op.iLike]: `%${search.trim()}%` } },
+        { entityType: { [Op.iLike]: `%${search.trim()}%` } },
+        { officerName: { [Op.iLike]: `%${search.trim()}%` } },
+      ];
+    }
+
+    const { count, rows } = await AuditLog.findAndCountAll({
+      where,
+      include: [
+        { model: User, as: 'officer', attributes: ['id', 'email', 'mobileNumber'] },
+        { model: Family, as: 'family', attributes: ['id', 'familyIdNumber'] },
+        {
+          model: Application,
+          as: 'application',
+          attributes: ['id'],
+          include: [{ model: Family, as: 'family', attributes: ['id', 'familyIdNumber'] }],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: pageLimit,
+      offset: (pageNum - 1) * pageLimit,
+      distinct: true,
+    });
+
+    const data = rows.map((log) => {
+      const item = log.toJSON();
+      item.familyId = item.family?.familyIdNumber || item.application?.family?.familyIdNumber || null;
+      delete item.family;
+      return item;
+    });
+    res.json({
+      success: true,
+      data,
+      pagination: { total: count, page: pageNum, limit: pageLimit, totalPages: Math.ceil(count / pageLimit) },
     });
   } catch (error) {
     next(error);
@@ -452,4 +632,7 @@ module.exports = {
   handleDuplicateDecision,
   getDataQualityIssues,
   flagFamilyQuality,
+  getOfficerApplications,
+  updateApplicationStatus,
+  getAuditLogs,
 };

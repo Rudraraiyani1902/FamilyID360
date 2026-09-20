@@ -8,6 +8,9 @@ const {
   handleDuplicateDecision,
   getDataQualityIssues,
   flagFamilyQuality,
+  getOfficerApplications,
+  updateApplicationStatus,
+  getAuditLogs,
 } = require('../controllers/officer.controller');
 
 const { verifyToken } = require('../middleware/auth.middleware');
@@ -38,5 +41,12 @@ router.post('/duplicates/:id/decision', handleDuplicateDecision);
 
 // Feature 6: Data Quality Scans
 router.get('/data-quality', getDataQualityIssues);
+
+// Feature 7: Application Management
+router.get('/applications', getOfficerApplications);
+router.put('/applications/:id/status', updateApplicationStatus);
+
+// Feature 8: Read-only audit trail
+router.get('/audit-logs', getAuditLogs);
 
 module.exports = router;

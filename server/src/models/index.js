@@ -421,6 +421,9 @@ Application.belongsTo(User, { foreignKey: 'applied_by', as: 'applicant' });
 
 Family.hasMany(AuditLog, { foreignKey: 'entity_id', constraints: false, as: 'auditLogs' });
 AuditLog.belongsTo(User, { foreignKey: 'performed_by', as: 'officer' });
+AuditLog.belongsTo(Family, { foreignKey: 'entity_id', constraints: false, as: 'family' });
+AuditLog.belongsTo(Application, { foreignKey: 'entity_id', constraints: false, as: 'application' });
+Application.hasMany(AuditLog, { foreignKey: 'entity_id', constraints: false, as: 'auditLogs' });
 
 DuplicateRecord.belongsTo(Family, { foreignKey: 'source_family_id', as: 'sourceFamily' });
 DuplicateRecord.belongsTo(Family, { foreignKey: 'matched_family_id', as: 'matchedFamily' });

@@ -64,6 +64,11 @@ server
 - **POST /api/auth/register**: Register a new user
 - **POST /api/auth/login**: Authenticate a user and return a JWT
 - **GET /api/protected**: Access a protected route (requires authentication)
+- **POST /api/assistant/chat**: Ask the authenticated user's FamilyID Assistant a question
+
+### Assistant provider configuration
+
+The assistant always retrieves family, application, scheme, and eligibility data on the server. Eligibility is calculated by the existing rule-based engine before any response is generated. With `AI_PROVIDER=none`, the server uses a deterministic verified-data formatter. To use an OpenAI-compatible provider, set `AI_PROVIDER=openai_compatible`, `AI_API_URL`, `AI_API_KEY`, and `AI_MODEL` in the server environment. These values are never exposed to the client.
 
 ## Contributing
 Contributions are welcome! Please submit a pull request or open an issue for any enhancements or bug fixes.

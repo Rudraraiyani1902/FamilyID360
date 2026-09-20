@@ -7,6 +7,7 @@ const eligibilityRoutes = require('./routes/eligibility.routes');
 const schemeRoutes = require('./routes/scheme.routes');
 const applicationRoutes = require('./routes/application.routes');
 const officerRoutes = require('./routes/officer.routes');
+const assistantRoutes = require('./routes/assistant.routes');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/families', familyRoutes);
 app.use('/api/schemes', schemeRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/officer', officerRoutes);
+app.use('/api/assistant', assistantRoutes);
 app.use('/api', eligibilityRoutes);
 
 // Error handling middleware

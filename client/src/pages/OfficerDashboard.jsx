@@ -10,6 +10,25 @@ import {
   handleDuplicateDecision,
 } from '../api/officer.api';
 
+function DistributionBars({ title, items, labelKey = 'status' }) {
+  const max = Math.max(...(items || []).map((item) => item.count), 0);
+  return (
+    <div className="card space-y-4">
+      <h2 className="text-sm font-bold text-gray-900">{title}</h2>
+      {!items?.length ? <p className="text-xs text-gray-500 py-5">No data available yet.</p> : (
+        <div className="space-y-3">
+          {items.map((item) => (
+            <div key={item[labelKey]} className="space-y-1">
+              <div className="flex justify-between gap-3 text-xs"><span className="text-gray-600 truncate">{String(item[labelKey]).replace(/_/g, ' ')}</span><strong className="text-gray-900">{item.count}</strong></div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-primary-600 rounded-full" style={{ width: `${max ? Math.max((item.count / max) * 100, 4) : 0}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function OfficerDashboard() {
   const navigate = useNavigate();
 
@@ -214,6 +233,13 @@ export default function OfficerDashboard() {
           icon={<span className="text-xl">⚠️</span>}
         />
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <DistributionBars title="Applications by status" items={stats?.applicationsByStatus} />
+        <DistributionBars title="Families by verification status" items={stats?.familiesByVerificationStatus} />
+        <DistributionBars title="Scheme application distribution" items={stats?.schemeApplicationDistribution} labelKey="scheme" />
+      </div>
+      <DistributionBars title="Data quality issues" items={stats?.dataQualityByCategory} labelKey="category" />
 
       {/* Main Grid: Feature 5 Duplicate Records + Feature 6 Data Quality Flags */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

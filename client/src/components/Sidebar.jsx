@@ -59,6 +59,15 @@ export default function Sidebar({ isOpen, onClose }) {
         </svg>
       ),
     },
+    {
+      to: '/assistant',
+      label: 'FamilyID Assistant',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8 10h.01M12 10h.01M16 10h.01M21 12a8.5 8.5 0 01-9 8.5 8.7 8.7 0 01-3.4-.7L4 21l1.2-3.5A8.5 8.5 0 1112 20.5" />
+        </svg>
+      ),
+    },
   ];
 
   const officerNavLinks = [
@@ -95,6 +104,25 @@ export default function Sidebar({ isOpen, onClose }) {
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      ),
+    },
+    {
+      to: '/officer/applications',
+      label: 'Application Management',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12h6m-6 4h6m3 5H6a2 2 0 01-2-2V5a2 2 0 012-2h8l4 4v12a2 2 0 01-2 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M14 3v4h4" />
+        </svg>
+      ),
+    },
+    {
+      to: '/officer/audit-logs',
+      label: 'Audit Log',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
     },

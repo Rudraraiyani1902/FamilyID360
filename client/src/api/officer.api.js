@@ -19,6 +19,13 @@ export const handleDuplicateDecision = (id, payload) =>
 
 export const getDataQualityIssues = () => api.get('/officer/data-quality');
 
+export const getOfficerApplications = (params) => api.get('/officer/applications', { params });
+
+export const updateApplicationStatus = (id, payload) =>
+  api.put(`/officer/applications/${id}/status`, payload);
+
+export const getAuditLogs = (params) => api.get('/officer/audit-logs', { params });
+
 export default {
   getDashboardStats,
   searchFamilies,
@@ -28,4 +35,7 @@ export default {
   getDuplicateRecords,
   handleDuplicateDecision,
   getDataQualityIssues,
+  getOfficerApplications,
+  updateApplicationStatus,
+  getAuditLogs,
 };
