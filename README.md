@@ -1,280 +1,366 @@
-﻿# FamilyID 360
+# FamilyID 360 🏛️
 
-> A modern digital platform for Gujarat Government's Family Identification and Welfare Scheme Management System.
+> **Unified Family Identification & Welfare Scheme Eligibility Management System**  
+> Built for the Government of Gujarat Digital Governance Initiative.
 
-FamilyID 360 bridges the gap between eligible citizens and government welfare schemes by providing a unified family identity, rule-based eligibility matching, and a powerful officer dashboard for beneficiary management.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Quick Start](#quick-start)
-- [Demo Mode](#demo-mode)
-- [Demo Credentials](#demo-credentials)
-- [API Reference](#api-reference)
-- [Security Notes](#security-notes)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-336791?style=flat&logo=postgresql&logoColor=white)](https://supabase.com/)
+[![Express](https://img.shields.io/badge/Express-4.x-000000?style=flat&logo=express&logoColor=white)](https://expressjs.com/)
+[![Deployment](https://img.shields.io/badge/Deployed-Render%20%7C%20Vercel-46E3B7?style=flat)](https://render.com/)
 
 ---
 
-## Overview
+## 📑 Table of Contents
 
-FamilyID 360 assigns every household a unique **Family ID** (e.g., `GJ-2026-001`) that acts as a single point of identity for accessing Gujarat Government welfare schemes. Citizens can check their eligibility, apply for schemes, and track applications. Officers can search, verify, and audit family records.
-
----
-
-## Features
-
-### Citizen Portal
-- **Family Dashboard** — View Family ID, members, income, and verification status
-- **Family Members** — Add, edit, and manage household members
-- **Scheme Discovery** — Browse all government schemes with eligibility badges (ELIGIBLE / POTENTIALLY ELIGIBLE / NOT ELIGIBLE)
-- **Eligibility Engine** — Rule-based, deterministic eligibility check (no AI hallucination)
-- **Applications** — Apply for schemes, track status, upload missing documents
-- **Documents** — Manage uploaded documents per family and member
-- **AI Assistant** — Natural language assistant for scheme queries
-
-### Officer Portal
-- **Dashboard Analytics** — Real-time stats: total families, applications by status, duplicates, verification queue
-- **Family Registry Search** — Server-side search by Family ID, name, district, verification status
-- **Family Details** — Authorized view with masked PII (Aadhaar, mobile)
-- **Verification Workflow** — Update family status (VERIFIED / REQUIRES_UPDATE / UNDER_REVIEW) with audit trail
-- **Duplicate Detection** — Deterministic duplicate matching with confidence scores
-- **Data Quality Flags** — Missing income, incomplete profiles, shared mobile numbers
-- **Audit Logs** — Complete timeline of officer actions with previous/new state
-
-### Admin Portal
-- System-level overview dashboard
+1. [System Overview](#-system-overview)
+2. [Key Capabilities](#-key-capabilities)
+3. [Architecture & Workflow](#-architecture--workflow)
+4. [Technology Stack](#-technology-stack)
+5. [Repository Structure](#-repository-structure)
+6. [Local Development Setup](#-local-development-setup)
+7. [Database Setup (Supabase PostgreSQL)](#-database-setup-supabase-postgresql)
+8. [Demo Credentials & Scenarios](#-demo-credentials--scenarios)
+9. [Deployment Guide](#-deployment-guide)
+   - [Deploy Backend on Render](#1-deploy-backend-on-render)
+   - [Deploy Frontend on Vercel](#2-deploy-frontend-on-vercel)
+10. [API Reference](#-api-reference)
+11. [Security & Data Integrity](#-security--data-integrity)
+12. [Troubleshooting & FAQs](#-troubleshooting--faqs)
 
 ---
 
-## Technology Stack
+## 🏛️ System Overview
 
-| Layer       | Technology                          |
-|-------------|-------------------------------------|
-| Frontend    | React 19, Vite, React Router v7     |
-| Styling     | Vanilla CSS (custom design system)  |
-| HTTP Client | Axios                               |
-| Backend     | Node.js, Express 4                  |
-| Database    | PostgreSQL with Sequelize ORM       |
-| Auth        | JWT (JSON Web Tokens) + bcrypt      |
-| Eligibility | Rule-based engine (deterministic)   |
+**FamilyID 360** eliminates administrative fragmentation in public welfare distribution by assigning every Gujarat household a singular, authoritative **Family ID** (e.g., `GJ-2026-001`). 
+
+The platform features:
+* **Citizen Portal**: Enables families to manage member profiles, check real-time welfare entitlements via a **deterministic rule-based eligibility engine**, apply for state schemes, and upload required verification documents.
+* **Officer & Administrative Workspace**: Gives taluka, district, and state verification officers tools for server-side family registry search, application adjudication, document inspection, duplicate detection, and immutable audit tracking.
+* **AI Scheme Assistant**: Provides contextual assistance in natural language using an LLM integration (Groq / OpenAI compatible) while keeping entitlement calculations 100% deterministic and rule-governed.
 
 ---
 
-## Project Structure
+## 🚀 Key Capabilities
+
+### 👨‍👩‍👧‍👦 Citizen Portal
+* **Family Dashboard**: Real-time snapshot of the household's Family ID, head of family, address, total members, income level, and state verification status.
+* **Member Management**: Add and maintain household members (relationship, age, gender, occupation, disability status).
+* **Scheme Discovery & Entitlement Match**: Live evaluation of household demographics against Gujarat welfare schemes with clear outcome badges:
+  * `ELIGIBLE` — Household satisfies all statutory rules.
+  * `POTENTIALLY_ELIGIBLE` — Income and demographics match, pending document submission.
+  * `NOT_ELIGIBLE` — Specific rules not met (with transparent explanation).
+* **Application Lifecycle**: One-click application submission with live status tracking (`PENDING` ➔ `UNDER_REVIEW` ➔ `DOCUMENT_REQUIRED` ➔ `APPROVED` / `REJECTED`).
+* **Document Locker**: Secure uploading and tracking of income certificates, caste certificates, land records, and disability cards.
+
+### 🛡️ Officer & Governance Workspace
+* **Real-Time Analytics**: District-level statistics on enrolled households, pending reviews, approved benefits, and duplicate flags.
+* **Registry Search**: Indexed server-side searching with filters for District, Verification Status, and Income ranges.
+* **Application Adjudication**: Review submitted claims, inspect supporting documents, and issue approvals, rejections, or document requests with mandatory audit remarks.
+* **Duplicate Detection Engine**: Cross-matches member names (with Gujarati honorific normalization such as *bhai*, *ben*), dates of birth, and contact numbers to flag potential duplicate identities with confidence scoring.
+* **Accountability & Audit Logs**: Immutable recording of every state change, document inspection, and officer decision with timestamp and actor tracking.
+
+---
+
+## 🏗️ Architecture & Workflow
+
+```mermaid
+graph TD
+    User([Citizen / Officer]) <--> Frontend[React 19 + Vite SPA\nHosted on Vercel]
+    Frontend <-->|JWT / JSON REST API| Backend[Node.js + Express\nHosted on Render]
+    Backend <-->|Sequelize ORM + SSL| Database[(Supabase PostgreSQL\nSession Pooler :5432)]
+    Backend <-->|Advisory Queries| LLM[Groq / OpenAI Compatible\nAI Scheme Assistant]
+```
+
+### Authentication & Role Flow
+```
+Register / Login (Mobile + Password)
+          ↓
+Backend Verification (bcrypt hash check)
+          ↓
+JWT Signed (with userId & role: citizen | officer | admin)
+          ↓
+Role-Based Protected Route Navigation:
+  ├── Citizen: /dashboard, /family, /members, /schemes, /applications, /documents
+  ├── Officer: /officer/dashboard, /officer/families, /officer/applications, /officer/documents, /schemes
+  └── Admin:   /admin/dashboard, System Governance
+```
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Component | Technology / Library |
+| :--- | :--- | :--- |
+| **Frontend** | Framework | React 19, Vite, React Router v7 |
+| | HTTP Client | Axios with custom interceptors & auto URL normalization |
+| | Styling | Tailwind CSS & Custom Government Portal Design Tokens |
+| **Backend** | Runtime & API | Node.js (v18+), Express 4 |
+| | ORM | Sequelize 6 (PostgreSQL dialect) |
+| | Authentication | JWT (`jsonwebtoken`), Password Hashing (`bcrypt`) |
+| | File Uploads | Multer (with MIME & 10MB size validation) |
+| | Validation | Express-Validator |
+| **Database** | Primary Store | Hosted PostgreSQL (Supabase Connection Pooler with SSL) |
+| **AI / NLP** | Assistant | Groq API / OpenAI compatible (`openai/gpt-oss-120b`) |
+| **Deployment** | Infrastructure | **Backend**: Render Web Service \| **Frontend**: Vercel |
+
+---
+
+## 📁 Repository Structure
 
 ```
 FamilyID360/
-├── client/                   # React frontend (Vite)
+├── client/                     # Frontend Application (React + Vite)
 │   ├── src/
-│   │   ├── api/              # Axios API service modules
-│   │   ├── components/       # Reusable UI components
-│   │   ├── context/          # AuthContext, FamilyContext
-│   │   ├── pages/            # Page components (citizen + officer)
-│   │   └── App.jsx           # Routes and role-based access
-│   └── .env.example
+│   │   ├── api/                # Modular Axios API services (schemes, family, officer, etc.)
+│   │   ├── components/         # UI Components (Sidebar, Navbar, ErrorMessage, SchemeCard, Modal)
+│   │   ├── context/            # Global state (AuthContext, FamilyContext)
+│   │   ├── pages/              # Route views (Citizen & Officer dashboards, schemes, reviews)
+│   │   ├── utils/              # Data formatters and validation helpers
+│   │   ├── App.jsx             # Main router & role-based route definitions
+│   │   └── main.jsx            # React root entry point
+│   ├── vercel.json             # Vercel SPA rewrite configuration
+│   └── package.json
 │
-├── server/                   # Express backend
+├── server/                     # Backend Application (Node.js + Express)
 │   ├── src/
-│   │   ├── controllers/      # Request handlers
-│   │   ├── middleware/       # Auth (verifyToken, authorizeRoles)
-│   │   ├── models/           # Sequelize models (index.js)
-│   │   ├── routes/           # Express routers
-│   │   ├── services/         # Business logic (eligibility, dataQuality)
-│   │   ├── seeds/
-│   │   │   ├── seed.js       # Original seed (single demo family)
-│   │   │   └── demo-seed.js  # Hackathon demo seed (10 families)
-│   │   └── app.js
-│   └── .env.example
+│   │   ├── controllers/        # Business logic controllers (auth, family, scheme, officer, document)
+│   │   ├── middleware/         # Auth verification, role guards, document uploaders
+│   │   ├── models/             # Sequelize database models & entity associations
+│   │   ├── routes/             # Express API route endpoints
+│   │   ├── seeds/              # Seed scripts (seed.js, demo-seed.js)
+│   │   ├── services/           # Rule-based eligibility engine & duplicate detection service
+│   │   ├── app.js              # Express app setup, CORS, and health probes
+│   │   └── server.js           # Server bootstrap & Sequelize database sync
+│   └── package.json
 │
-└── README.md
+├── render.yaml                 # Render infrastructure deployment blueprint
+└── README.md                   # System documentation
 ```
 
 ---
 
-## Quick Start
+## 💻 Local Development Setup
 
 ### Prerequisites
+* **Node.js**: v18.x or v20.x
+* **npm**: v9.x or higher
+* **PostgreSQL** or access to a **Supabase PostgreSQL** project
 
-- Node.js 18+
-- PostgreSQL 14+
-- npm 9+
-
-### 1. Clone and install
-
+### 1. Clone the Repository
 ```bash
-git clone <repo-url>
+git clone https://github.com/Rudraraiyani1902/FamilyID360.git
 cd FamilyID360
-
-# Install backend dependencies
-cd server && npm install
-
-# Install frontend dependencies
-cd ../client && npm install
 ```
 
-### 2. Configure environment
-
-**Backend:**
+### 2. Configure Backend (`server`)
 ```bash
 cd server
-cp .env.example .env
-# Edit .env: set DATABASE_URL and JWT_SECRET
+npm install
+```
+Create a `.env` file in the `server/` directory:
+```env
+PORT=3000
+NODE_ENV=development
+
+# Database Connection (Supabase IPv4 Pooler recommended)
+DATABASE_URL=postgresql://postgres.<PROJECT_REF>:<PASSWORD>@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
+
+# JWT Secret
+JWT_SECRET=familyid360_super_secret_jwt_key_2024
+JWT_EXPIRATION=7d
+
+# CORS Allowed Origins (comma-separated or *)
+CORS_ORIGIN=http://localhost:5173
+
+# Optional AI Assistant configuration
+AI_PROVIDER=openai_compatible
+AI_API_URL=https://api.groq.com/openai/v1
+AI_API_KEY=your_groq_api_key_here
+AI_MODEL=openai/gpt-oss-120b
 ```
 
-**Frontend:**
+### 3. Configure Frontend (`client`)
 ```bash
-cd client
-cp .env.example .env
-# VITE_API_URL=http://localhost:5000/api (default)
+cd ../client
+npm install
+```
+Create a `.env` file in the `client/` directory:
+```env
+# Point to local server or leave as /api for Vite proxy
+VITE_API_URL=/api
 ```
 
-### 3. Set up the database
-
+### 4. Seed Demo Data & Start Services
+In `server/`:
 ```bash
-cd server
+# Populate database with 10 synthetic families, schemes, applications, and users
+npm run demo:reset
 
-# Seed demo data (10 diverse families, all roles)
-npm run demo:seed
-```
-
-### 4. Start the servers
-
-**Backend (Terminal 1):**
-```bash
-cd server
+# Start backend dev server
 npm run dev
-# Server starts on http://localhost:5000
 ```
-
-**Frontend (Terminal 2):**
+In a new terminal, in `client/`:
 ```bash
-cd client
+# Start frontend dev server
 npm run dev
-# Client starts on http://localhost:5173
 ```
-
-Open http://localhost:5173 in your browser.
+Open **`http://localhost:5173`** in your browser.
 
 ---
 
-## Demo Mode
+## 🗄️ Database Setup (Supabase PostgreSQL)
 
-The demo seed creates a rich, realistic dataset with intentionally diverse families for demonstrating all features of the eligibility engine and officer workflow.
+Because modern Supabase direct connections (`db.<ref>.supabase.co`) use IPv6-only DNS resolution, always use the **Supabase Connection Pooler** (port `5432` Session Mode) to guarantee IPv4 compatibility across local development and hosting platforms like Render.
 
+### Getting your Connection String
+1. Go to your **Supabase Dashboard** ➔ **Project Settings** ➔ **Database**.
+2. Under **Connection Pooling**, select **Session Mode** (Port `5432`).
+3. Copy the URI and ensure your password is URL-encoded if it contains special characters (e.g. replace `@` with `%40`).
+
+Example:
+```
+postgresql://postgres.yvxgmhgkdcczazqvalyc:YourPassword%40123@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
+```
+
+### Automated Migration & Seeding
+FamilyID 360 uses Sequelize automatic schema synchronization:
 ```bash
-# Seed demo data (idempotent — safe to run multiple times)
 cd server
-npm run demo:seed
-
-# FULL RESET and re-seed (clears all data first)
 npm run demo:reset
 ```
-
-> **Warning:** `demo:reset` deletes ALL data including users, families, and applications. Use only in development/demo environments.
-
----
-
-## Demo Credentials
-
-All passwords below are for the demo environment only. Use strong, unique passwords in production.
-
-| Role    | Mobile      | Password      | Description                     |
-|---------|-------------|---------------|---------------------------------|
-| Citizen | 9000000001  | Demo@1234     | Ramesh Patel — BPL Farmer, Anand (ELIGIBLE for multiple schemes) |
-| Citizen | 9000000002  | Demo@1234     | Meena Sharma — Urban middle income, Ahmedabad |
-| Citizen | 9000000003  | Demo@1234     | Vijay Kumar — Senior citizen household, Rajkot |
-| Officer | 8000000001  | Officer@1234  | Priya Joshi — Anand District Officer |
-| Officer | 8000000002  | Officer@1234  | Arjun Mehta — Surat District Officer |
-| Admin   | 7000000001  | Admin@1234    | System Administrator |
-
-### Demo Eligibility Showcase
-
-| Family ID    | Location        | Income    | Key Eligibility Result |
-|--------------|-----------------|-----------|------------------------|
-| GJ-2026-001  | Petlad, Anand   | Rs.2.5L   | MA Yojana ✅ BBBP ✅ Kisan ⚠️ |
-| GJ-2026-003  | Ahmedabad City  | Rs.7.8L   | Most schemes ❌ (high income) |
-| GJ-2026-004  | Gondal, Rajkot  | Rs.0.9L   | Vridha Sahay ✅ MA Yojana ✅ |
-| GJ-2026-006  | Vadodara City   | Rs.12L    | All schemes ❌ |
-| GJ-2026-007  | Visnagar, Mehsana | Rs.0.6L | MA Yojana ✅ BBBP ✅ |
-| GJ-2026-010  | Navsari Rural   | Rs.2.1L   | 4 schemes eligible/potential |
+This creates all tables (`users`, `families`, `family_members`, `schemes`, `scheme_rules`, `scheme_documents`, `applications`, `documents`, `audit_logs`, `duplicate_records`) and seeds diverse test scenarios.
 
 ---
 
-## API Reference
+## 🔑 Demo Credentials & Scenarios
 
-### Auth
-| Method | Endpoint              | Access  | Description           |
-|--------|-----------------------|---------|-----------------------|
-| POST   | /api/auth/register    | Public  | Register new citizen  |
-| POST   | /api/auth/login       | Public  | Login, returns JWT    |
-| GET    | /api/auth/me          | Auth    | Get current user      |
+All records are **100% synthetic** demo personas designed for live presentation:
 
-### Families
-| Method | Endpoint              | Access    | Description               |
-|--------|-----------------------|-----------|---------------------------|
-| POST   | /api/families         | Citizen   | Create family             |
-| GET    | /api/families/me      | Citizen   | Get own family            |
-| PUT    | /api/families/:id     | Citizen   | Update family             |
-
-### Family Members
-| Method | Endpoint                          | Access  | Description     |
-|--------|-----------------------------------|---------|-----------------|
-| GET    | /api/families/:id/members         | Citizen | List members    |
-| POST   | /api/families/:id/members         | Citizen | Add member      |
-| PUT    | /api/families/:id/members/:mid    | Citizen | Update member   |
-| DELETE | /api/families/:id/members/:mid    | Citizen | Remove member   |
-
-### Schemes & Eligibility
-| Method | Endpoint                          | Access  | Description            |
-|--------|-----------------------------------|---------|------------------------|
-| GET    | /api/schemes                      | Auth    | List all schemes       |
-| GET    | /api/schemes/:id                  | Auth    | Scheme details         |
-| GET    | /api/families/:id/eligibility     | Citizen | Run eligibility check  |
-
-### Applications
-| Method | Endpoint              | Access  | Description            |
-|--------|-----------------------|---------|------------------------|
-| POST   | /api/applications     | Citizen | Submit application     |
-| GET    | /api/applications     | Citizen | List own applications  |
-
-### Officer (requires OFFICER or ADMIN role)
-| Method | Endpoint                                    | Description                     |
-|--------|---------------------------------------------|---------------------------------|
-| GET    | /api/officer/dashboard/stats                | Dashboard analytics             |
-| GET    | /api/officer/families                       | Search families (paginated)     |
-| GET    | /api/officer/families/:id                   | Family details (masked PII)     |
-| PATCH  | /api/officer/families/:id/verification      | Update verification status      |
-| GET    | /api/officer/duplicates                     | List potential duplicates       |
-| POST   | /api/officer/duplicates/:id/decision        | Record duplicate decision       |
-| GET    | /api/officer/data-quality                   | Data quality issues             |
-| GET    | /api/officer/applications                   | All applications (paginated)    |
-| GET    | /api/officer/audit-logs                     | Audit trail                     |
+| Role | Mobile Number | Password | Profile Description | Key Showcase Scenarios |
+| :--- | :--- | :--- | :--- | :--- |
+| **Citizen** | `9000000001` | `Demo@1234` | Ramesh Patel (BPL Farmer, Anand) | `ELIGIBLE` for Mukhyamantri Amrutam & BBBP; `DOCUMENT_REQUIRED` for Kisan Scheme |
+| **Citizen** | `9000000002` | `Demo@1234` | Meena Sharma (Urban Middle, Ahmedabad) | Income > ₹7.5 Lakhs; evaluates to `NOT_ELIGIBLE` for poverty-line schemes |
+| **Citizen** | `9000000003` | `Demo@1234` | Vijay Kumar (Senior Citizen, Rajkot) | Age ≥ 65; `ELIGIBLE` for Vridha Sahay Yojana (Old Age Pension) |
+| **Officer** | `8000000001` | `Officer@1234` | Priya Joshi (Anand District) | Access to Family Search, Application Review, Duplicate Resolution |
+| **Officer** | `8000000002` | `Officer@1234` | Arjun Mehta (Surat District) | District workspace & document verification |
+| **Admin** | `7000000001` | `Admin@1234` | System Administrator | High-level analytics & system governance |
 
 ---
 
-## Security Notes
+## 🚀 Deployment Guide
 
-- **JWT**: Tokens expire after 7 days. Refresh requires re-login.
-- **IDOR Protection**: Citizens can only access their own family data. Officers cannot access other officers' accounts.
-- **PII Masking**: Aadhaar references and mobile numbers are masked in officer views.
-- **Role Enforcement**: All officer/admin endpoints use `verifyToken` + `authorizeRoles` middleware.
-- **No Hardcoded Secrets**: All secrets use environment variables. Never commit `.env` files.
-- **Input Validation**: All user inputs validated with `express-validator`.
-- **Demo Data**: The demo seed uses only synthetic/fictional data. No real citizen information.
+### 1. Deploy Backend on Render
+
+1. Log in to your [Render Dashboard](https://dashboard.render.com/).
+2. Click **New +** ➔ **Web Service** and connect the `FamilyID360` repository.
+3. Configure the service settings:
+   - **Name**: `familyid360-api`
+   - **Root Directory**: `server`
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/health`
+4. Add the following **Environment Variables**:
+
+| Variable Name | Value |
+| :--- | :--- |
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | *Your Supabase pooler connection URL* |
+| `JWT_SECRET` | *Your secret token signing key* |
+| `CORS_ORIGIN` | `*` *(or your Vercel URL once generated)* |
+| `AI_PROVIDER` | `openai_compatible` |
+| `AI_API_URL` | `https://api.groq.com/openai/v1` |
+| `AI_API_KEY` | *Your Groq API Key* |
+| `AI_MODEL` | `openai/gpt-oss-120b` |
+
+5. Click **Create Web Service**. Once deployed, verify `https://<service-name>.onrender.com/health`.
 
 ---
 
-## Development Notes
+### 2. Deploy Frontend on Vercel
 
-- The eligibility engine is **purely rule-based** — no LLM or AI involved. Results are deterministic.
-- Duplicate detection uses **normalized name matching** (strips Gujarati honorifics like *bhai*, *ben*) + DOB/mobile/location comparison.
-- All officer actions create immutable `AuditLog` entries with previous and new state.
+1. Log in to [Vercel Dashboard](https://vercel.com/dashboard) ➔ **Add New...** ➔ **Project**.
+2. Import the `FamilyID360` repository.
+3. In the project setup screen:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: Click **Edit** and choose **`client`** *(Essential)*
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Add the **Environment Variable**:
+
+| Key | Value | Environments |
+| :--- | :--- | :--- |
+| `VITE_API_URL` | `https://<your-render-backend-url>.onrender.com/api` | Production & Preview |
+
+5. Click **Deploy**. Vercel will build and serve the application globally with client-side SPA routing backed by [client/vercel.json](file:///d:/FamilyID360/FamilyID360/client/vercel.json).
 
 ---
 
-*FamilyID 360 — Built for Gujarat Hackathon Demo. All data is synthetic.*
+## 📡 API Reference
+
+### 🔐 Authentication (`/api/auth`)
+* `POST /api/auth/register` — Register a new citizen account.
+* `POST /api/auth/login` — Sign in and receive JWT token.
+* `GET /api/auth/me` — Retrieve current authenticated user profile.
+
+### 🏠 Family Management (`/api/families`)
+* `GET /api/families/me` — Retrieve authenticated citizen's family details and members.
+* `POST /api/families` — Register household profile.
+* `PUT /api/families/:id` — Update family demographic details.
+* `GET /api/families/:id/members` — List household members.
+* `POST /api/families/:id/members` — Add a new member.
+* `PUT /api/families/:id/members/:mid` — Update member attributes.
+* `DELETE /api/families/:id/members/:mid` — Remove a member record.
+
+### 📜 Schemes & Entitlements (`/api/schemes` & `/api/eligibility`)
+* `GET /api/schemes` — List all active welfare schemes (public / authenticated).
+* `GET /api/schemes/:id` — Get specific scheme rules and required documents.
+* `GET /api/families/:id/eligibility` — Run deterministic eligibility check for a family.
+* `GET /api/eligibility/me` — Evaluate entitlement status for the authenticated household.
+
+### 📝 Applications & Documents (`/api/applications` & `/api/documents`)
+* `GET /api/applications` — List submitted scheme applications for current family.
+* `POST /api/applications` — Submit a scheme benefit application.
+* `GET /api/documents` — List uploaded verification documents.
+* `POST /api/documents/upload` — Upload a supporting document (PDF, JPG, PNG).
+
+### 👮 Officer Workspace (`/api/officer`)
+*(Requires `officer` or `admin` role)*
+* `GET /api/officer/dashboard/stats` — High-level statistics on beneficiaries and applications.
+* `GET /api/officer/families` — Paginated and searchable family registry.
+* `GET /api/officer/families/:id` — Detailed family profile with masked PII.
+* `PATCH /api/officer/families/:id/verification` — Update verification status (`VERIFIED`, `REQUIRES_UPDATE`, `UNDER_REVIEW`).
+* `GET /api/officer/applications` — Filterable claims list across all schemes and statuses.
+* `PATCH /api/officer/applications/:id/status` — Approve, reject, or request documents for an application.
+* `GET /api/officer/duplicates` — List potential duplicate household records.
+* `POST /api/officer/duplicates/:id/decision` — Adjudicate duplicate candidate records.
+* `GET /api/officer/audit-logs` — Immutable audit log trail of officer actions.
+
+---
+
+## 🔒 Security & Data Integrity
+
+1. **Deterministic Rule Engine**: Entitlement evaluations rely strictly on database rules (`SchemeRule`), preventing AI hallucinations from making state welfare determinations.
+2. **Strict RBAC & Route Protection**: API endpoints and React views enforce `citizen`, `officer`, and `admin` role boundaries.
+3. **PII Masking**: Sensitive citizen details (such as Aadhaar references and mobile digits) are masked in officer registry views.
+4. **Accountable Audit Trail**: All status modifications, application approvals/rejections, and duplicate determinations record old/new values in `AuditLog`.
+5. **Safe File Handling**: Multer file uploads restrict execution types (PDF, JPEG, PNG only) and enforce a strict 10MB ceiling.
+
+---
+
+## ❓ Troubleshooting & FAQs
+
+#### 1. Why does my Supabase database connection fail locally or on Render?
+Ensure you are using the **Connection Pooler URL** (`aws-0-<region>.pooler.supabase.com:5432`) instead of the direct `db.<ref>.supabase.co` URL. Supabase direct connections use IPv6-only DNS, which causes `ENOTFOUND` errors on networks without IPv6.
+
+#### 2. Why does the initial request to Render take 30-40 seconds?
+On Render's Free tier, instances spin down after 15 minutes of inactivity. The Axios client is configured with a `60s` timeout so the client waits gracefully while the server boots up.
+
+#### 3. Why did page refresh on Vercel give a 404 error?
+Single Page Applications require routing rewrites so that deep links (e.g. `/schemes`, `/officer/applications`) are served by `/index.html`. This is handled by [client/vercel.json](file:///d:/FamilyID360/FamilyID360/client/vercel.json).
+
+---
+
+*FamilyID 360 — Built for Gujarat State Welfare Innovation. All data in this repository is synthetic and for demonstration purposes.*
