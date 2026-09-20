@@ -1,7 +1,21 @@
 const { Sequelize, DataTypes, Op } = require('sequelize');
 
+// SSL configuration for hosted PostgreSQL (Supabase requires SSL)
+const isLocalhost = process.env.DATABASE_URL && (
+  process.env.DATABASE_URL.includes('localhost') || 
+  process.env.DATABASE_URL.includes('127.0.0.1')
+);
+
+const dialectOptions = (!isLocalhost && process.env.DB_SSL !== 'false') ? {
+  ssl: {
+    require: true,
+    rejectUnauthorized: false,
+  },
+} : {};
+
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
+  dialectOptions,
   logging: false,
   define: {
     underscored: true,
@@ -491,7 +505,7 @@ Scheme.hasMany(SchemeDocument, { foreignKey: 'scheme_id', as: 'documents' });
 SchemeDocument.belongsTo(Scheme, { foreignKey: 'scheme_id' });
 
 Family.hasMany(Application, { foreignKey: 'family_id', as: 'applications' });
-Application.belongsTo(Family, { foreignKey: 'family_id' });
+Application.belongsTo(Family, { foreignKey: 'family_id', as: 'family' });
 
 Family.hasMany(Document, { foreignKey: 'family_id', as: 'documents' });
 Document.belongsTo(Family, { foreignKey: 'family_id', as: 'family' });

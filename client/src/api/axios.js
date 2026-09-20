@@ -3,7 +3,10 @@ import axios from 'axios';
 export const TOKEN_STORAGE_KEY = 'fid360_auth_token';
 
 // Read API URL from VITE_API_URL, fallback to /api (uses Vite proxy in development)
-const apiBaseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
+let apiBaseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
+if (typeof apiBaseUrl === 'string' && apiBaseUrl.startsWith('http') && !apiBaseUrl.endsWith('/api') && !apiBaseUrl.endsWith('/api/')) {
+  apiBaseUrl = apiBaseUrl.replace(/\/+$/, '') + '/api';
+}
 
 const api = axios.create({
   baseURL: apiBaseUrl,

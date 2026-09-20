@@ -10,7 +10,7 @@ const {
 const resolveUserFamily = async (userId) => {
   let family = await Family.findOne({
     where: { createdBy: userId },
-    order: [['createdAt', 'DESC']],
+    order: [['createdAt', 'ASC']],
   });
 
   if (!family) {

@@ -11,12 +11,16 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 
-sequelize.sync({ alter: true })
+sequelize.authenticate()
+  .then(() => {
+    console.log('Supabase PostgreSQL connected');
+    return sequelize.sync({ alter: true });
+  })
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
+  .catch((error) => {
+    console.error('Database connection failed:', error);
   });

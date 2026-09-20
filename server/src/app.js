@@ -12,8 +12,44 @@ const documentRoutes = require('./routes/document.routes');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// CORS: allow origins declared in CORS_ORIGIN, or any localhost / vercel.app domains
+const envOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return true; // allow non-browser / server-to-server requests
+  if (envOrigins.includes('*') || envOrigins.includes(origin)) return true;
+  // Automatically allow any vercel.app deployment and localhost ports
+  if (origin.endsWith('.vercel.app')) return true;
+  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
+  return false;
+};
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS policy: origin ${origin} is not allowed`));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// Health check endpoints for Render and monitoring
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'FamilyID360 API', timestamp: new Date().toISOString() });
+});
+
+app.get('/', (_req, res) => {
+  res.status(200).json({ message: 'FamilyID 360 API is running', docs: '/api' });
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

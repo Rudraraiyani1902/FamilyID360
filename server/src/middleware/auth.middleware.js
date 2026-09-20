@@ -26,32 +26,38 @@ const verifyToken = (req, res, next) => {
 
 // Middleware to check if the user is an ADMIN
 const isAdmin = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    if (user.role !== 'admin') {
-      return res.status(403).send({ message: 'Require Admin Role!' });
-    }
-    next();
-  });
+  User.findByPk(req.userId)
+    .then((user) => {
+      if (!user || user.role !== 'admin') {
+        return res.status(403).send({ message: 'Require Admin Role!' });
+      }
+      next();
+    })
+    .catch((err) => res.status(500).send({ message: 'Internal server error.' }));
 };
 
 // Middleware to check if the user is an OFFICER
 const isOfficer = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    if (user.role !== 'officer') {
-      return res.status(403).send({ message: 'Require Officer Role!' });
-    }
-    next();
-  });
+  User.findByPk(req.userId)
+    .then((user) => {
+      if (!user || user.role !== 'officer') {
+        return res.status(403).send({ message: 'Require Officer Role!' });
+      }
+      next();
+    })
+    .catch((err) => res.status(500).send({ message: 'Internal server error.' }));
 };
 
 // Middleware to check if the user is a CITIZEN
 const isCitizen = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    if (user.role !== 'citizen') {
-      return res.status(403).send({ message: 'Require Citizen Role!' });
-    }
-    next();
-  });
+  User.findByPk(req.userId)
+    .then((user) => {
+      if (!user || user.role !== 'citizen') {
+        return res.status(403).send({ message: 'Require Citizen Role!' });
+      }
+      next();
+    })
+    .catch((err) => res.status(500).send({ message: 'Internal server error.' }));
 };
 
 module.exports = {

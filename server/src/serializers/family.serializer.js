@@ -16,11 +16,14 @@ const safeFamily = (family) => ({
   id: family.id,
   familyIdNumber: family.familyIdNumber,
   addressId: family.addressId,
+  district: family.district,
+  villageCity: family.villageCity,
   annualIncome: family.annualIncome,
   status: family.status,
+  verificationStatus: family.verificationStatus,
   createdAt: family.createdAt,
   updatedAt: family.updatedAt,
   members: family.members?.map(safeMember),
 });
 
-module.exports = { safeFamily, safeMember };
+module.exports = { safeFamily, safeMember };

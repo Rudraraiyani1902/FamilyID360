@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "jest"
+    "test": "jest",
+    "seed": "node src/seeds/seed.js",
+    "demo:seed": "node src/seeds/demo-seed.js",
+    "demo:reset": "node src/seeds/demo-seed.js --reset"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
