@@ -65,14 +65,45 @@ app.use('/api', eligibilityRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('[SERVER ERROR]', err);
+
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(400).json({ message: 'Document file must be 10 MB or smaller.' });
   }
   if (err.message === 'Only PDF, JPG, JPEG, and PNG files are allowed.') {
     return res.status(400).json({ message: err.message });
   }
-  res.status(500).send({ message: 'Something went wrong!' });
+
+  // Sequelize Validation Errors
+  if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
+    const errorList = err.errors?.map((e) => ({
+      field: e.path,
+      message: e.message,
+    })) || [];
+    return res.status(400).json({
+      message: errorList[0]?.message || 'Database validation failed.',
+      errors: errorList,
+    });
+  }
+
+  // Database Connection / Execution Errors
+  if (err.name === 'SequelizeDatabaseError' || err.name === 'SequelizeConnectionError') {
+    return res.status(500).json({
+      message: 'Database service encountered an issue. Please verify database connectivity.',
+      detail: process.env.NODE_ENV === 'production' ? undefined : err.message,
+    });
+  }
+
+  // JSON Body Parse Error
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: 'Malformed JSON payload in request body.' });
+  }
+
+  const errorMessage = err.message || 'An internal server error occurred.';
+  res.status(err.status || 500).json({
+    message: errorMessage,
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
+  });
 });
 
 module.exports = app;

@@ -58,14 +58,18 @@ export default function App() {
 
             {/* Authenticated Layout */}
             <Route element={<Layout />}>
+              {/* SHARED Protected Routes (Citizen, Officer, Admin) */}
+              <Route element={<ProtectedRoute allowedRoles={['citizen', 'officer', 'admin']} />}>
+                <Route path="/schemes" element={<Schemes />} />
+                <Route path="/schemes/:id" element={<SchemeDetails />} />
+              </Route>
+
               {/* CITIZEN Protected Routes */}
               <Route element={<ProtectedRoute allowedRoles={['citizen', 'admin']} />}>
                 <Route path="/dashboard" element={<FamilyDashboard />} />
                 <Route path="/family" element={<FamilyProfile />} />
                 <Route path="/profile" element={<Navigate to="/family" replace />} />
                 <Route path="/members" element={<FamilyMembers />} />
-                <Route path="/schemes" element={<Schemes />} />
-                <Route path="/schemes/:id" element={<SchemeDetails />} />
                 <Route path="/eligibility" element={<EligibilityResults />} />
                 <Route path="/applications" element={<Applications />} />
                 <Route path="/assistant" element={<Assistant />} />
