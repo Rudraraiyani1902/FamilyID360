@@ -65,10 +65,19 @@ server
 - **POST /api/auth/login**: Authenticate a user and return a JWT
 - **GET /api/protected**: Access a protected route (requires authentication)
 - **POST /api/assistant/chat**: Ask the authenticated user's FamilyID Assistant a question
+- **GET /api/documents**: List the authenticated citizen's family documents
+- **POST /api/documents/upload**: Upload a validated synthetic demo document
+- **GET /api/documents/requirements/:applicationId**: View scheme-configured requirements
+- **GET /api/officer/documents**: Paginated officer document review queue
+- **PUT /api/officer/documents/:id/review**: Verify or reject a document with audit logging
 
 ### Assistant provider configuration
 
 The assistant always retrieves family, application, scheme, and eligibility data on the server. Eligibility is calculated by the existing rule-based engine before any response is generated. With `AI_PROVIDER=none`, the server uses a deterministic verified-data formatter. To use an OpenAI-compatible provider, set `AI_PROVIDER=openai_compatible`, `AI_API_URL`, `AI_API_KEY`, and `AI_MODEL` in the server environment. These values are never exposed to the client.
+
+### Document storage and extraction
+
+Demo uploads are stored under `server/storage/documents` and are never served as public static files. The database stores metadata and a private storage reference, not file bytes. `sequelize.sync({ alter: true })` creates or updates the `documents` table in this prototype because no migration runner is configured. Optional extraction uses `DOCUMENT_EXTRACTION_PROVIDER`, `DOCUMENT_EXTRACTION_API_URL`, and `DOCUMENT_EXTRACTION_API_KEY`; extraction is advisory and never verifies a document automatically.
 
 ## Contributing
 Contributions are welcome! Please submit a pull request or open an issue for any enhancements or bug fixes.

@@ -21,6 +21,8 @@ import OfficerApplications from './pages/OfficerApplications';
 import OfficerAuditLogs from './pages/OfficerAuditLogs';
 import AdminDashboard from './pages/AdminDashboard';
 import Assistant from './pages/Assistant';
+import Documents from './pages/Documents';
+import OfficerDocuments from './pages/OfficerDocuments';
 
 function RootRedirect() {
   const { isAuthenticated, role, initialLoading } = useAuth();
@@ -67,6 +69,7 @@ export default function App() {
                 <Route path="/eligibility" element={<EligibilityResults />} />
                 <Route path="/applications" element={<Applications />} />
                 <Route path="/assistant" element={<Assistant />} />
+                <Route path="/documents" element={<Documents />} />
               </Route>
 
               {/* OFFICER Protected Routes */}
@@ -76,6 +79,7 @@ export default function App() {
                 <Route path="/officer/families/:id" element={<OfficerFamilyDetails />} />
                 <Route path="/officer/applications" element={<OfficerApplications />} />
                 <Route path="/officer/audit-logs" element={<OfficerAuditLogs />} />
+                <Route path="/officer/documents" element={<OfficerDocuments />} />
                 <Route path="/officer" element={<Navigate to="/officer/dashboard" replace />} />
               </Route>
 

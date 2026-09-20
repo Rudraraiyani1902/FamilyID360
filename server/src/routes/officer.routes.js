@@ -12,6 +12,12 @@ const {
   updateApplicationStatus,
   getAuditLogs,
 } = require('../controllers/officer.controller');
+const {
+  listOfficerDocuments,
+  getOfficerDocument,
+  streamOfficerDocument,
+  reviewDocument,
+} = require('../controllers/document.controller');
 
 const { verifyToken } = require('../middleware/auth.middleware');
 const { authorizeRoles } = require('../middleware/role.middleware');
@@ -48,5 +54,11 @@ router.put('/applications/:id/status', updateApplicationStatus);
 
 // Feature 8: Read-only audit trail
 router.get('/audit-logs', getAuditLogs);
+
+// Feature: Officer Document Verification
+router.get('/documents', listOfficerDocuments);
+router.get('/documents/:id/file', streamOfficerDocument);
+router.get('/documents/:id', getOfficerDocument);
+router.put('/documents/:id/review', reviewDocument);
 
 module.exports = router;

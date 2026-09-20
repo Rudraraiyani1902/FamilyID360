@@ -296,6 +296,86 @@ const Application = sequelize.define('Application', {
   tableName: 'applications',
 });
 
+// ─── Document ────────────────────────────────────────────────────────────────
+const Document = sequelize.define('Document', {
+  id: uuid,
+  familyId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'family_id',
+  },
+  memberId: {
+    type: DataTypes.UUID,
+    field: 'member_id',
+  },
+  applicationId: {
+    type: DataTypes.UUID,
+    field: 'application_id',
+  },
+  documentType: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    field: 'document_type',
+  },
+  documentName: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    field: 'document_name',
+  },
+  storageReference: {
+    type: DataTypes.STRING(500),
+    allowNull: false,
+    field: 'storage_reference',
+  },
+  mimeType: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    field: 'mime_type',
+  },
+  fileSize: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    field: 'file_size',
+  },
+  status: {
+    type: DataTypes.ENUM('UPLOADED', 'UNDER_REVIEW', 'VERIFIED', 'REJECTED', 'EXPIRED'),
+    allowNull: false,
+    defaultValue: 'UPLOADED',
+  },
+  uploadedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+    field: 'uploaded_at',
+  },
+  verifiedAt: {
+    type: DataTypes.DATE,
+    field: 'verified_at',
+  },
+  verifiedBy: {
+    type: DataTypes.UUID,
+    field: 'verified_by',
+  },
+  rejectionReason: {
+    type: DataTypes.TEXT,
+    field: 'rejection_reason',
+  },
+  expiryDate: {
+    type: DataTypes.DATEONLY,
+    field: 'expiry_date',
+  },
+  extractedData: {
+    type: DataTypes.JSONB,
+    field: 'extracted_data',
+  },
+  consistencyFlags: {
+    type: DataTypes.JSONB,
+    field: 'consistency_flags',
+  },
+}, {
+  tableName: 'documents',
+});
+
 // ─── AuditLog ─────────────────────────────────────────────────────────────────
 const AuditLog = sequelize.define('AuditLog', {
   id: uuid,
@@ -413,6 +493,15 @@ SchemeDocument.belongsTo(Scheme, { foreignKey: 'scheme_id' });
 Family.hasMany(Application, { foreignKey: 'family_id', as: 'applications' });
 Application.belongsTo(Family, { foreignKey: 'family_id' });
 
+Family.hasMany(Document, { foreignKey: 'family_id', as: 'documents' });
+Document.belongsTo(Family, { foreignKey: 'family_id', as: 'family' });
+FamilyMember.hasMany(Document, { foreignKey: 'member_id', as: 'documents' });
+Document.belongsTo(FamilyMember, { foreignKey: 'member_id', as: 'member' });
+Application.hasMany(Document, { foreignKey: 'application_id', as: 'documents' });
+Document.belongsTo(Application, { foreignKey: 'application_id', as: 'application' });
+User.hasMany(Document, { foreignKey: 'verified_by', as: 'verifiedDocuments' });
+Document.belongsTo(User, { foreignKey: 'verified_by', as: 'verifier' });
+
 Scheme.hasMany(Application, { foreignKey: 'scheme_id', as: 'applications' });
 Application.belongsTo(Scheme, { foreignKey: 'scheme_id', as: 'scheme' });
 
@@ -438,6 +527,7 @@ module.exports = {
   SchemeRule,
   SchemeDocument,
   Application,
+  Document,
   AuditLog,
   DuplicateRecord,
 };

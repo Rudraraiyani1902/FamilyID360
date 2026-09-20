@@ -215,6 +215,7 @@ export default function Applications() {
                   <th>Status</th>
                   <th>Missing Documents</th>
                   <th>Last Updated</th>
+                  <th>Documents</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -286,6 +287,11 @@ export default function Applications() {
                       {/* Last Updated */}
                       <td className="whitespace-nowrap text-xs text-gray-500">
                         {formatDate(app.updatedAt)}
+                      </td>
+                      <td>
+                        <Link to={`/documents?applicationId=${app.id}`} className="btn-secondary text-[11px] py-1.5 px-2.5">
+                          Manage documents
+                        </Link>
                       </td>
                     </tr>
                   );

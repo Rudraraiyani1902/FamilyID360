@@ -68,6 +68,16 @@ export default function Sidebar({ isOpen, onClose }) {
         </svg>
       ),
     },
+    {
+      to: '/documents',
+      label: 'My Documents',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M7 3h7l4 4v14H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M14 3v5h5M9 13h6m-6 4h6" />
+        </svg>
+      ),
+    },
   ];
 
   const officerNavLinks = [
@@ -123,6 +133,15 @@ export default function Sidebar({ isOpen, onClose }) {
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+    {
+      to: '/officer/documents',
+      label: 'Document Verification',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12l2 2 4-4m5-5v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h8l4 4z" />
         </svg>
       ),
     },

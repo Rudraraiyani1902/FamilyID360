@@ -8,6 +8,7 @@ const schemeRoutes = require('./routes/scheme.routes');
 const applicationRoutes = require('./routes/application.routes');
 const officerRoutes = require('./routes/officer.routes');
 const assistantRoutes = require('./routes/assistant.routes');
+const documentRoutes = require('./routes/document.routes');
 
 const app = express();
 
@@ -23,11 +24,18 @@ app.use('/api/schemes', schemeRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/officer', officerRoutes);
 app.use('/api/assistant', assistantRoutes);
+app.use('/api/documents', documentRoutes);
 app.use('/api', eligibilityRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ message: 'Document file must be 10 MB or smaller.' });
+  }
+  if (err.message === 'Only PDF, JPG, JPEG, and PNG files are allowed.') {
+    return res.status(400).json({ message: err.message });
+  }
   res.status(500).send({ message: 'Something went wrong!' });
 });
 
